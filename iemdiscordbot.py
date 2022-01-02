@@ -113,7 +113,7 @@ async def main():
                         if not (any(x in text for x in bannedStrings) or text.startswith("METAR")):
                             message['channels'].append('filtered')
 
-                            if any(x in text.lower() for x in ["tornado"]):
+                            if any(x in text.lower() for x in ["tornado" "waterspout"]):
                                 message['channels'].append('tornado')
 
                             if any(x in text.lower() for x in ['severe thunderstorm', 'hail', 'strong thunderstorms', 'mesoscale discussion']):

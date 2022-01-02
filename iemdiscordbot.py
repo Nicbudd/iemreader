@@ -145,9 +145,7 @@ async def main():
                         if (diff < dt.timedelta(minutes=1)):
                             for channelName in message['channels']:
                                 channel = discord.utils.get(botserver.channels, name=channelName)
-                                text = f"`{fTime}`: {text}"
-                                #print(message['channels'], text)
-                                await channel.send(text)
+                                await channel.send(f"`{fTime}`: {text}")
                                 time.sleep(pauseBetweenMessages)
 
 

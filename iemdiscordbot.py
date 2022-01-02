@@ -116,7 +116,7 @@ async def main():
                             if any(x in text.lower() for x in ["tornado"]):
                                 message['channels'].append('tornado')
 
-                            if any(x in text.lower() for x in ['severe thunderstorm', 'hail', 'strong thunderstorms', 'mesoscale discussion', 'flood']):
+                            if any(x in text.lower() for x in ['severe thunderstorm', 'hail', 'strong thunderstorms', 'mesoscale discussion']):
                                 message['channels'].append('severe')
 
                             if any(x in text.lower() for x in ['winter storm', 'snow', 'ice', 'freezing rain', 'winter weather', 'freeze', 'wind chill']):

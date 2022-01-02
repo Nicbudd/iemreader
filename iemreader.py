@@ -111,8 +111,8 @@ def main():
                         # winter storm/weather warningss
                         [r"(?<!(expires|cancels) )(winter storm warning|winter storm(?! watch)|winter weather advisory|winter weather(?! watch))", f"{colors.blueBG}\g<0>{colors.end}"],
 
-                        # default inches handler
-                        [r"(snow\s*)?(of\s*)?\d+\.?\d*\s?(inches|inch|in)", f"{colors.greenBG}\g<0>{colors.end}"],
+                        # Mesoscale Discussion
+                        [r"Mesoscale Discussion \#\d+", f"{colors.greenBG}\g<0>{colors.end}"],
 
                         # hail size
                         [r"hail:?\s*(of\s*)?[><+-]?\d+\.?\d*\s?(inches|inch|in)(hail)?", f"{colors.cyanBG}\g<0>{colors.end}"],
@@ -128,6 +128,7 @@ def main():
 
                         # match inches
                         #[r"\d+\.?\d*\s?(inches|inch|in)", f"{colors.green}\g<0>{colors.end}"],
+
 
                         # reports
                         [r"(\] )(.* reports ((tstm|wnd|gst|non-tstm|gust|snow|hail) )*)", f"\g<1>{colors.purple}\g<2>{colors.end}"],

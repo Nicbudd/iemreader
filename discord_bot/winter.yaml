@@ -1,0 +1,14 @@
+server_id: 1077641322153906290
+channel_id: 1079165537571065856
+rooms:
+  - "botstalk"
+message:
+  must_contain:
+    - "snow"
+    - "Snow"
+    - "SNOW"
+    - "winter"
+    - "Winter"
+    - "WINTER"
+  must_not_contain: []
+  subs: []

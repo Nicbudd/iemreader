@@ -1,0 +1,21 @@
+server_id: 
+channel_id: 
+rooms:
+  - "botstalk"
+message:
+  must_contain:
+    - "tornado"
+  must_not_contain:
+    - "Climate Report:"
+    - "Routine pilot report"
+    - "Terminal Aerodrome Forecast"
+    - "SIGMET"
+    - "Zone Forecast Package"
+    - "Area Forecast Discussion"
+  subs:
+    -
+      regex: "(?<!(expires|cancels) )(tornado watch|tornado: possible)"
+      replacement: "**\\g<0>**"
+    -
+      regex: "(?<!(expires|cancels) )severe thunderstorm watch"
+      replacement: "**\\g<0>**"

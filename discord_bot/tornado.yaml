@@ -1,0 +1,20 @@
+server_id: 1077641322153906290
+channel_id: 1079118499777085480
+rooms:
+  - "botstalk"
+message:
+  must_contain:
+    - "tornado"
+    - "TORNADO"
+    - "Tornado"
+  must_not_contain:
+    - "Climate Report:"
+    - "Routine pilot report"
+    - "Terminal Aerodrome Forecast"
+    - "SIGMET"
+    - "Zone Forecast Package"
+    - "Area Forecast Discussion"
+  subs:
+    -
+      regex: "(?<!(expires|cancels) )(tornado watch|tornado: possible)"
+      replacement: "**\\g<0>**"

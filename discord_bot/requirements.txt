@@ -1,0 +1,6 @@
+pyyaml
+html
+bs4
+requests
+discord
+asyncio

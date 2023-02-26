@@ -1,0 +1,20 @@
+server_id: 1077641322153906290
+channel_id: 1079159634037841940
+rooms:
+  - "botstalk"
+message:
+  must_contain:
+    - "particularly dangerous situation"
+    - "emergency"
+    - "Particularly Dangerous Situation"
+    - "Emergency"
+    - "PARTICULARLY DANGEROUS SITUATION"
+    - "EMERGENCY"
+  must_not_contain:
+    - "Climate Report:"
+    - "Routine pilot report"
+    - "Terminal Aerodrome Forecast"
+    - "SIGMET"
+    - "Zone Forecast Package"
+    - "Area Forecast Discussion"
+  subs: []

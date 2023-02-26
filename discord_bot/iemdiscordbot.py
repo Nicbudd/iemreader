@@ -6,6 +6,8 @@ import requests
 import re
 import discord
 import asyncio
+import sys
+import yaml
 
 refreshRate = 15 # seconds
 pauseBetweenMessages = 1 # seconds
@@ -33,26 +35,57 @@ def parseMessages(data):
     return data
 
 
+def parseConfig():
+    try:
+        text_file = sys.argv[1]
+    except:
+        print("Please provide a valid file name")
+        exit()
+    else:
+        try:
+            with open(text_file, "r") as fp:
+                config = yaml.safe_load(fp)
+                return config
+
+        except yaml.YAMLError as err:
+            print("YAML Error: " + err)
+            exit()
+
+
+
+
 async def main():
 
-    botserver = client.get_guild(927052295072534530)
+    config = parseConfig()
 
-    prevEndOfSeq = 0
+    botserver = client.get_guild(config["server_id"])
+
+    prevEndOfSeq = {}
 
     while True:
 
-        rooms = ['botstalk']
+        for room in config["rooms"]:
 
-        for room in rooms:
-            r = requests.get(f"https://weather.im/iembot-json/room/{room}?seqnum={prevEndOfSeq}")
+            try:
+                seqnum = prevEndOfSeq[room]
+            except:
+                seqnum = 0
+
+            try:
+                r = requests.get(f"https://weather.im/iembot-json/room/{room}?seqnum={seqnum}")
+            except: 
+                print("Accessing website failed: room `" + room + "` and seq num `" + seqnum + "`")
+                continue
 
             if r.status_code == 200:
+
+                discord_message = ""
 
                 data = r.json()['messages']
 
                 if not (len(data) == 0):
 
-                    prevEndOfSeq = data[-1]['seqnum']
+                    prevEndOfSeq[room] = data[-1]['seqnum']
 
                     data = parseMessages(data)
 
@@ -69,9 +102,6 @@ async def main():
                         fTime = t.strftime('%H:%M:%S')
 
                         # FILTERS --------------------------------------------------
-
-                        bannedStrings = ["Climate Report:", "Routine pilot report",
-                        "Terminal Aerodrome Forecast", "SIGMET", "Zone Forecast Package", "Area Forecast Discussion"]
 
                         subs = [
                         # tornado watches
@@ -110,44 +140,20 @@ async def main():
 
                         # PRINTING ----------------------------------------------------------
                         # filter banned topics
-                        if not (any(x in text for x in bannedStrings) or text.startswith("METAR")):
-                            message['channels'].append('filtered')
+                        if (not any(x in text for x in config["message"]["must_not_contain"])) and any(x in text for x in config["message"]["must_contain"]):
 
-                            if any(x in text.lower() for x in ["tornado", "waterspout"]):
-                                message['channels'].append('tornado')
+                            # make highlight substitutions
+                            for sub in config["message"]["subs"]:
+                                text = re.sub(sub["regex"], sub["replacement"], text, flags=re.I)
 
-                            if any(x in text.lower() for x in ['severe thunderstorm', 'hail', 'strong thunderstorms', 'mesoscale discussion']):
-                                message['channels'].append('severe')
-
-                            if any(x in text.lower() for x in ['winter storm', 'snow', 'ice', 'freezing rain', 'winter weather', 'freeze', 'wind chill']):
-                                message['channels'].append('winter')
-
-                            if any(x in text.lower() for x in ['wildfire', 'fire', 'smoke']):
-                                message['channels'].append('wildfire')
-
-                            if any(x in text.lower() for x in ['flood', 'flash flood', 'flooding']):
-                                message['channels'].append('flooding')
-
-                            if any(x in text.lower() for x in ['reports', 'dmg', 'damage']):
-                                message['channels'].append('reports')
-
-                        # make highlight substitutions
-                        for sub in subs:
-                            text = re.sub(sub[0], sub[1], text, flags=re.I)
-
-                        # do not post unfiltered for now
-                        message['channels'].remove("all-messages")
-
-                        #if "filtered" in message["channels"]:
-                            #message['channels'].remove("filtered")
-
-                        # PRINTING ----------------------------------------------------------
-                        if (diff < dt.timedelta(minutes=1)):
-                            for channelName in message['channels']:
-                                channel = discord.utils.get(botserver.channels, name=channelName)
-                                await channel.send(f"`{fTime}`: {text}")
-                                time.sleep(pauseBetweenMessages)
-
+                            # PRINTING ----------------------------------------------------------
+                            if (diff < dt.timedelta(minutes=1)):
+                                discord_message += f"`{fTime}`: {text}\n"
+                
+                if not discord_message == "":
+                    channel = client.get_channel(config["channel_id"])
+                    await channel.send(discord_message)
+                    await asyncio.sleep(pauseBetweenMessages)
 
             else:
                 print(f"{room}: HTTP Error: {r.status_code}")
@@ -158,7 +164,9 @@ async def main():
 
 #discord stuff
 
-client = discord.Client()
+intents = discord.Intents.default()
+
+client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
@@ -172,7 +180,7 @@ async def on_message(message):
         return
 
     if message.author.id == 396730242460418058 and message.content == "!stop":
-        print("Was told to stop by austin")
+        print("Was told to stop by austin.")
         exit();
 
 
@@ -180,6 +188,7 @@ async def on_message(message):
 with open("token.config", "r") as file:
     for line in file:
         token = line
+
 
 
 client.run(token)

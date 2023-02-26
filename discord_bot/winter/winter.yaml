@@ -10,5 +10,11 @@ message:
     - "winter"
     - "Winter"
     - "WINTER"
-  must_not_contain: []
+  must_not_contain:
+    - "Climate Report:"
+    - "Routine pilot report"
+    - "Terminal Aerodrome Forecast"
+    - "SIGMET"
+    - "Zone Forecast Package"
+    - "Area Forecast Discussion"
   subs: []

@@ -1,0 +1,17 @@
+server_id: 1077641322153906290
+channel_id: 1079118632942043248
+rooms:
+  - "botstalk"
+message:
+  must_contain:
+    - "severe thunderstorm"
+    - "Severe Thunderstorm"
+    - "SEVERE THUNDERSTORM"
+  must_not_contain:  
+    - "Climate Report:"
+    - "Routine pilot report"
+    - "Terminal Aerodrome Fore:cast"
+    - "SIGMET"
+    - "Zone Forecast Package"
+    - "Area Forecast Discussion"
+  subs: []

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 import time
@@ -16,6 +18,9 @@ class colors:
     purple = '\033[35m'
     cyan = '\033[36m'
     white = '\033[97m'
+
+    emer1 = '\033[0m\033[1;41;97m'
+    emer2 = '\033[0m\033[1;45;97m'
 
 
     blackBG = '\033[0m\033[40m'
@@ -82,62 +87,67 @@ def main():
                         text = message['message']
 
                         t = dt.datetime.strptime(message['ts'], '%Y-%m-%d %H:%M:%S')
-                        now = dt.datetime.utcnow()
+                        t = t.replace(tzinfo=dt.timezone.utc)
+                        now = dt.datetime.now(dt.UTC)
                         diff = now - t
 
                         fTime = t.strftime('%H:%M:%S')
 
                         # FILTERS --------------------------------------------------
 
-                        bannedStrings = ["Climate Report:", "Routine pilot report",
+                        bannedStrings = ["PIREP", "PIRUS",  "Climate Report:", "Routine pilot report",
                         "Terminal Aerodrome Forecast", "SIGMET", "Zone Forecast Package", "Area Forecast Discussion"]
 
                         subs = [
+                        # tornado emergency
+                        [r"(?<!(expires|cancels) )tornado emergency", f"{colors.emer1}TORNADO EMERGENCY{colors.end}"],
+
                         # tornado watches
-                        [r"(?<!(expires|cancels) )(tornado watch|tornado: possible)", f"{colors.red}\g<0>{colors.end}"],
+                        [r"(?<!(expires|cancels) )(tornado watch|tornado: possible)", f"{colors.red}\\g<0>{colors.end}"],
 
                         # tornado warnings or word tornado
-                        [r"(?<!(expires|cancels) )(tornado warning|tornado: radar indicated|tornado: observed|tornado(?!( watch|: possible)))", f"{colors.redBG}\g<0>{colors.end}"],
+                        [r"(?<!(expires|cancels) )(tornado warning|tornado: radar indicated|tornado: observed|tornado(?!( watch|: possible| emergency)))", f"{colors.redBG}\\g<0>{colors.end}"],
+
 
                         # severe thunderstorm watches
-                        [r"(?<!(expires|cancels) )severe thunderstorm watch", f"{colors.yellow}\g<0>{colors.end}"],
+                        [r"(?<!(expires|cancels) )severe thunderstorm watch", f"{colors.yellow}\\g<0>{colors.end}"],
 
                         # severe thunderstorm warnings
-                        [r"(?<!(expires|cancels) )(severe thunderstorm warning|severe thunderstorm(?! watch))",    f"{colors.yellowBG}\g<0>{colors.end}"],
+                        [r"(?<!(expires|cancels) )(severe thunderstorm warning|severe thunderstorm(?! watch))",    f"{colors.yellowBG}\\g<0>{colors.end}"],
 
                         # winter storm/weather watches
-                        [r"(?<!(expires|cancels) )winter storm watch", f"{colors.blue}\g<0>{colors.end}"],
+                        [r"(?<!(expires|cancels) )winter storm watch", f"{colors.blue}\\g<0>{colors.end}"],
 
                         # winter storm/weather warningss
-                        [r"(?<!(expires|cancels) )(winter storm warning|winter storm(?! watch)|winter weather advisory|winter weather(?! watch))", f"{colors.blueBG}\g<0>{colors.end}"],
+                        [r"(?<!(expires|cancels) )(winter storm warning|winter storm(?! watch)|winter weather advisory|winter weather(?! watch))", f"{colors.blueBG}\\g<0>{colors.end}"],
 
                         # Mesoscale Discussion
-                        [r"Mesoscale Discussion \#\d+", f"{colors.greenBG}\g<0>{colors.end}"],
+                        [r"Mesoscale Discussion \#\d+", f"{colors.greenBG}\\g<0>{colors.end}"],
 
                         # hail size
-                        [r"hail:?\s*(of\s*)?[><+-]?\d+\.?\d*\s?(inches|inch|in)(hail)?", f"{colors.cyanBG}\g<0>{colors.end}"],
+                        [r"hail:?\s*(of\s*)?[><+-]?\d+\.?\d*\s?(inches|inch|in)(hail)?", f"{colors.cyanBG}\\g<0>{colors.end}"],
 
                         # snowfall amounts
-                        [r"(heavy\s*)?snow:?\s*(of\s*)?[><+-]?\d+\.?\d*\s?(inches|inch|in|)(of)?(snow)?", f"{colors.blueBG}\g<0>{colors.end}"],
+                        [r"(heavy\s*)?snow:?\s*(of\s*)?[><+-]?\d+\.?\d*\s?(inches|inch|in|)(of)?(snow)?", f"{colors.blueBG}\\g<0>{colors.end}"],
 
                         # damage
-                        [r"DMG|damage", f"{colors.purpleBG}\g<0>{colors.end}"],
+                        [r"DMG|damage", f"{colors.purpleBG}\\g<0>{colors.end}"],
 
                         # match windspeed
-                        [r"(sust |sustained |peak )?(gust |wind |winds )?(of )?M?(\d{2}G)?\d+\.?\d*\s?(mph|kts|kt|knots|knot)", f"{colors.green}\g<0>{colors.end}"],
+                        [r"(sust |sustained |peak )?(gust |wind |winds )?(of )?M?(\d{2}G)?\d+\.?\d*\s?(mph|kts|kt|knots|knot)", f"{colors.green}\\g<0>{colors.end}"],
 
                         # match inches
                         #[r"\d+\.?\d*\s?(inches|inch|in)", f"{colors.green}\g<0>{colors.end}"],
 
 
                         # reports
-                        [r"(\] )(.* reports ((tstm|wnd|gst|non-tstm|gust|snow|hail) )*)", f"\g<1>{colors.purple}\g<2>{colors.end}"],
+                        [r"(\] )(.* reports ((tstm|wnd|gst|non-tstm|gust|snow|hail) )*)", f"\\g<1>{colors.purple}\\g<2>{colors.end}"],
 
                         # locale boxes
-                        [r"\[[^\]]*(GYX|BOX|BOS|BTV|NH|ME|VT|MA|MASS|CT|RI|Manchester,? NH)[^\[]*\]", f"{colors.whiteBG}{colors.black}\g<0>{colors.end}"],
+                        [r"\[[^\]]*(GYX|BOX|BOS|BTV|NH|ME|VT|MA|MASS|CT|RI|Manchester,? NH)[^\[]*\]", f"{colors.whiteBG}{colors.black}\\g<0>{colors.end}"],
 
                         # locale in other places
-                        [r"(?<=[^\w\[])(GYX|BOX|BOS|BTV|NH|ME|VT|MA|MASS|CT|RI|Manchester,? NH)(?=[^\w\]])", f"{colors.whiteBG}{colors.black}\g<1>{colors.end}"],
+                        [r"(?<=[^\w\[])(GYX|BOX|BOS|BTV|NH|ME|VT|MA|MASS|CT|RI|Manchester,? NH)(?=[^\w\]])", f"{colors.whiteBG}{colors.black}\\g<1>{colors.end}"],
 
                         ]
 
